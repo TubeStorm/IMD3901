@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Hello, WebVR! - A-Frame</title>
+        <meta name="description" content="Hello, WebVR! - A-Frame">
+        <script src="/js/aframe.min.js"></script>
+        <script src="/js/spherical-env-map.js"></script>
+
+        <!-- lets load in our components -->
+        <script src="/js/create-cow-component.js"></script>
+        <script src="/js/create-fox-component.js"></script>
+        <script src="/js/create-fox2-component.js"></script>
+        <script src="/js/create-fox3-component.js"></script>
+        <script src="/js/create-fox4-component.js"></script>
+        <script src="/js/cursor-listener.js"></script>
+        <script src="/js/remove-component.js"></script>
+
+        <!-- load in mixin for the cubes-->
+        <a-mixin id="cube" geometry="primitive: box"></a-mixin>
+        <a-mixin id="hoverColor" event-set__mouseenter="material.color: #CC435F"></a-mixin>
+        <a-mixin id="selectColor" event-set__click="material.color: #876A96"></a-mixin>
+        <a-mixin id="leaveColor" event-set__mouseleave="material.color: #9DE0AD"></a-mixin>
+        <a-mixin id="red" material="color: #F35F5F"></a-mixin>
+        <a-mixin id="green" material="color: #9DE0AD"></a-mixin>
+        <a-mixin id="blue" material="color: #36A3EB"></a-mixin>
+        <a-mixin id="yellow" material="color: #F1EA65"></a-mixin>
+        <a-mixin id="sphere" geometry="primitive: sphere"></a-mixin>
+    </head>
+    <body>
+        <!-- main scene and we added shadows .. -->
+        <a-scene shadow="type:basic;">
+                <a-assets timeout="3000">
+
+                    <!-- all assets that can be cached by browser -->
+                    <img crossorigin="anonymous" id="skymap" src="/assets/textures/CloudySky.jpg">
+                    <img crossorigin="anonymous" id="cowmap" src="/assets/textures/Cow.png">
+                    <img crossorigin="anonymous" id="chessmap" src="/assets/models/chess/chess.mtl">
+                    <img crossorigin="anonymous" id="cowmap" src="/assets/textures/foxtextures/TextureDiff3.png">
+                    
+                    <!-- main scene obj. -->
+                    <a-asset-item crossorigin="anonymous" id="scene-obj" src="/assets/models/chess/chess.obj">
+                    
+                    <!-- other scene obj --> 
+                    <a-asset-item crossorigin="anonymous" id="LowPolyAnimal-obj" src="/assets/models/fox/LowPolyAnimal.obj">
+                    
+                    <!-- use this method if you are having problems with sound playing -->
+                    <!-- sounds from "SuperSays" project : https://github.com/supermedium/supersays/tree/master/src/assets -->
+                    <a-asset-item crossorigin="anonymous" id="create-sound" src="/assets/sound/trashdispose.ogg" response-type="arraybuffer"></a-asset-item>
+                    <a-asset-item crossorigin="anonymous" id="delete-sound" src="/assets/sound/1.ogg" response-type="arraybuffer"></a-asset-item>
+                    <a-asset-item crossorigin="anonymous" id="jazz-sound" src="/assets/sound/jazzmusic.ogg" response-type="arraybuffer"></a-asset-item>
+                    <!-- this is the recommended method to preload sound though the above method seems to work consistently -->
+                    <!-- <audio id="create-sound" crossorigin="anonymous" src="/assets/sound/0.ogg" ></audio> -->
+                    <!-- <audio id="delete-sound" crossorigin="anonymous" src="/assets/sound/1.ogg" ></audio> -->
+                </a-assets>
+                
+                <!-- traditional method of creating a camera and cursor component for selection. select with reticle. -->
+                <!-- Also added in controls for desktop mouse/kb -->
+                
+                <a-entity position="0 4 18 " camera look-controls wasd-controls>
+                    <!-- if you add rayOrigin:mouse to teh cursor properties selection happens where you click -->
+                    <!-- <a-entity   cursor="fuse:true; fuseTimeout:500; rayOrigin:mouse;" -->
+                    <a-entity   cursor="fuse:false; fuseTimeout:500"
+                                position="0 0 -1"
+                                geometry="primitive:ring; radiusInner:0.02; radiusOuter:0.03;"
+                                material="shader:flat; color:black;" >
+                    </a-entity>
+                </a-entity>
+                
+
+                <!-- sound entities we will query and play in components -->
+                <a-entity id="createSound" sound="src:#create-sound"></a-entity>
+                <a-entity id="deleteSound" sound="src:#delete-sound"></a-entity>
+                
+                <!-- default lighting added in manually -->
+                <a-entity light="type:directional; castShadow:true; intensity:0.6; shadowBias:-0.000001; shadowMapWidth:1024; shadowMapHeight:1024;" position="-0.5 1 1"></a-entity>
+                <a-entity light="type: ambient; intensity: 1.0; color:#bbb;"></a-entity>
+                
+                <!-- my scene obj -->
+                <a-obj-model  src="#scene-obj"  position="-10 3.5 0"  rotation="0 90 0" scale="1 1 1" material="src:#jazz-sound" shadow="cast:true; receive:true;" spherical-env-map="src:#skymap;"></a-obj-model>   
+                
+
+                <!-- plane so we can see shadows-->
+                <a-entity id="plane" geometry="primitive:plane; width:35; height:35;" position="0 0 -4" rotation="-90 0 0" 
+                    shadow="receive:true;" material="color:#7BC8A4; sphericalEnvMap:#skymap; roughness:0.5; metalness:0.0;"></a-entity> 
+                <a-assets>
+                <a-mixin id="plane" geometry="height: 1; width: 4"></a-mixin>
+                </a-assets>
+                
+                <!-- background -->
+                <a-entity id="sky"
+                    geometry="primitive:sphere; radius:500;"
+                    material="shader:flat; src:#skymap; side:back; height:2048; width:2048"></a-entity>
+                
+                <!-- cube animations -->
+                    <a-entity create-fox2-component mixin="red cube" position="15 5 -4" scale="5 5 5" >
+                        <a-animation attribute="rotation"
+                                     dur="10000"
+                                     fill="forwards"
+                                     to="0 360 0"
+                                     easing="ease-in"
+                                     repeat="indefinite"></a-animation>
+                      </a-entity>
+                      
+                      <a-entity create-fox3-component mixin="yellow cube" scale="3 3 3" >
+                        <a-animation attribute="position"
+                                     dur="10000"
+                                     from= "0 4 0"
+                                     to="0 13 0"
+                                     repeat="indefinite"></a-animation>
+                      </a-entity>
+
+                      <a-entity create-fox4-component mixin="blue cube" position="-15 5 -4" >
+                        <a-animation attribute="scale"
+                                     dur="10000"
+                                     from= "6 6 6"
+                                     to="2 2 2"
+                                     easing="ease-in"
+                                     repeat="indefinite"></a-animation>
+                      </a-entity>
+
+                     <!-- text -->
+                      <a-entity
+                        position="0 10 0"
+                        scale = "4 4 4"
+                        geometry="primitive: plane; width:5; height: auto"
+                        material="opacity:0.0; transparent = true"
+                        align="center"
+                        text="font: https://cdn.aframe.io/fonts/Roboto-msdf.json; value: Can You Find All 4 Foxes; align: center; color: black"></a-entity>
+                      
+                          
+                          <a-entity  create-fox-component id="box" cursor-listener geometry="primitive: box"></a-entity>
+                          
+                    
+        </a-scene>
+    </body>
+</html>
